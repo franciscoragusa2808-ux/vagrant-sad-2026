@@ -61,8 +61,10 @@ iptables -A OUTPUT -o eth3 -s 172.2.6.10 -p tcp --sport 22 -m conntrack --ctstat
 #R1. Se debe hacer NAT del trafico saliente
 iptables -t nat -A POSTROUTING -s 172.2.6.0/24 -o eth0 -j MASQUERADE
 
-#ºR2. Permitir acceso desde la WAN a www a traves del puerto 80 haciendo port forwarding
-
+#R2. Permitir acceso desdse la WAN a www a traves del puerto 80 haciendo port forwarding
+iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to-destination 172.1.6.3:80
+iptables -A FORWARD -i eth0 -o eth2 -d 172.1.6.3 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth0 -s 172.1.6.3 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 #R3.a Usuarios de la LAN pueden acceder a 80 y 443 de www
 iptables -A FORWARD -i eth3 -o eth2 -s 172.2.6.0/24 -d 172.1.6.3 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth2 -o eth3 -s 172.1.6.3 -d 172.2.6.0/24 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
@@ -73,6 +75,20 @@ iptables -A FORWARD -i eth2 -o eth3 -s 172.1.6.0/24 -d 172.2.6.10 -p tcp --sport
 #R4. Permitir tráfico  desde la LAN
 iptables -A FORWARD -i eth3 -o eth0 -s 172.2.6.0/24 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth0 -o eth3 -d 172.2.6.0/24 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+#R5. Permitir tráfico  desde la DMZ (solo http/https,DNS y ntp)
+# HTTP
+iptables -A FORWARD -i eth2 -o eth0 -s 172.1.6.0/24 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth2 -d 172.1.6.0/24 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+# HTTPS
+iptables -A FORWARD -i eth2 -o eth0 -s 172.1.6.0/24 -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth2 -d 172.1.6.0/24 -p tcp --sport 443 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+# DNS
+iptables -A FORWARD -i eth2 -o eth0 -s 172.1.6.0/24 -p udp --dport 53 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth2 -d 172.1.6.0/24 -p udp --sport 53 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+# NTP
+iptables -A FORWARD -i eth2 -o eth0 -s 172.1.6.0/24 -p udp --dport 123 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth0 -o eth2 -d 172.1.6.0/24 -p udp --sport 123 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 
 

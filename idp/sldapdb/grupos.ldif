@@ -1,0 +1,9 @@
+dn: cn=mayores,ou=ou_grupos,dc=fragflo159,dc=org
+objectClass: top
+objectClass: posixGroup
+gidNumber: 10000
+
+dn: cn=menores,ou=ou_grupos,dc=fragflo159,dc=org
+objectClass: top
+objectClass: posixGroup
+gidNumber: 10001

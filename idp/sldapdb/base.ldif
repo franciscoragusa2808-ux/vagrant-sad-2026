@@ -1,0 +1,7 @@
+dn: ou=ou_usuarios,dc=fragflo159,dc=org
+objectClass: organizationalUnit
+ou: ou_usuarios
+
+dn: ou=ou_grupos,dc=fragflo159,dc=org
+objectClass: organizationalUnit
+ou: ou_grupos

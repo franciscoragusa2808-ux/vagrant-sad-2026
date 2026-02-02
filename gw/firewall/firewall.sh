@@ -91,6 +91,9 @@ iptables -A FORWARD -i eth2 -o eth0 -s 172.1.6.0/24 -p udp --dport 123 -m conntr
 iptables -A FORWARD -i eth0 -o eth2 -d 172.1.6.0/24 -p udp --sport 123 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 
+#P4 Permitir acceso a LDAP desde DMZ 
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.6.0/24 -d 172.2.6.2 -p tcp --dport 389 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.6.2 -d 172.1.6.0/24 -p tcp --sport 389 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 
 #### Logs para depurar ####

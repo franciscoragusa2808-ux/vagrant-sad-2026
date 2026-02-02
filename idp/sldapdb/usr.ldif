@@ -1,0 +1,47 @@
+dn: uid=fragusa,ou=ou_usuarios,dc=fragflo159,dc=org
+objectClass: top
+objectClass: posixAccount
+objectClass: inetOrgPerson
+objectClass: person
+cn: Andres Ragusa
+givenName: Francisco
+sn: Ragusa
+uid: fragusa
+uidNumber: 2000
+gidNumber: 10000
+homeDirectory: /home/fragusa
+loginShell: /bin/bash
+userPassword: {SSHA}yPZiSz8/fv1OdKSFZXIDpGdUTsqZ5Lfe
+mail: fragusa@fragflo159.org
+
+dn: uid=mgarcia,ou=ou_usuarios,dc=fragflo159,dc=org
+objectClass: top
+objectClass: posixAccount
+objectClass: inetOrgPerson
+objectClass: person
+cn: Maria Garcia
+givenName: Maria
+sn: Garcia
+uid: mgarcia
+uidNumber: 2002
+gidNumber: 10000
+homeDirectory: /home/mgarcia
+loginShell: /bin/bash
+userPassword: {SSHA}yPZiSz8/fv1OdKSFZXIDpGdUTsqZ5Lfe
+mail: mgarcia@fragflo159.org
+
+dn: uid=jsanchez,ou=ou_usuarios,dc=fragflo159,dc=org
+objectClass: top
+objectClass: posixAccount
+objectClass: inetOrgPerson
+objectClass: person
+cn: Javier Sanchez
+givenName: Javier
+sn: Sanchez
+uid: jsanchez
+uidNumber: 2001
+gidNumber: 10001
+homeDirectory: /home/jsanchez
+loginShell: /bin/bash
+userPassword: {SSHA}yPZiSz8/fv1OdKSFZXIDpGdUTsqZ5Lfe
+mail: jsanchez@fragflo159.org

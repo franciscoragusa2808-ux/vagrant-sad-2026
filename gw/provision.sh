@@ -8,6 +8,8 @@ echo " Aprovisionando Gateway "
 echo "########################################"
 echo "-----------------"
 echo "Actualizando repositorios"
+
+
 apt-get update -y && apt-get autoremove -y
 apt-get install -y net-tools iputils-ping curl tcpdump nmap
 

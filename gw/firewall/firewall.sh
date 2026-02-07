@@ -60,6 +60,8 @@ iptables -A OUTPUT -o eth3 -s 172.2.6.10 -p tcp --sport 22 -m conntrack --ctstat
 
 #R1. Se debe hacer NAT del trafico saliente
 iptables -t nat -A POSTROUTING -s 172.2.6.0/24 -o eth0 -j MASQUERADE
+iptables -t nat -A POSTROUTING -s 172.1.6.0/24 -o eth0 -j MASQUERADE
+
 
 #R2. Permitir acceso desdse la WAN a www a traves del puerto 80 haciendo port forwarding
 iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 80 -j DNAT --to-destination 172.1.6.3:80
@@ -95,10 +97,12 @@ iptables -A FORWARD -i eth0 -o eth2 -d 172.1.6.0/24 -p udp --sport 123 -m conntr
 iptables -A FORWARD -i eth2 -o eth3 -s 172.1.6.0/24 -d 172.2.6.2 -p tcp --dport 389 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
 iptables -A FORWARD -i eth3 -o eth2 -s 172.2.6.2 -d 172.1.6.0/24 -p tcp --sport 389 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
+# Regla P6. Permitir acceso de la LAN al squid de la DMZ
+iptables -A FORWARD -i eth3 -o eth2 -s 172.2.6.0/24 -d 172.1.6.2 -p tcp --dport 3128 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A FORWARD -i eth2 -o eth3 -s 172.1.6.2 -d 172.2.6.0/24 -p tcp --sport 3128 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
 
 #### Logs para depurar ####
 iptables -A INPUT -j LOG --log-prefix "FRF-INPUT" 
 iptables -A OUTPUT -j LOG --log-prefix "FRF-OUTPUT"
-iptables -A FORWARD -j LOG --log-prefix "FRF-FORWARD"ls
-
-
+iptables -A FORWARD -j LOG --log-prefix "FRF-FORWARD"

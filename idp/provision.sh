@@ -3,6 +3,9 @@
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
+# Cargar variables (password y rutas)
+source /vagrant/secrets.txt
+
 echo "########################################"
 echo " Aprovisionando IDP (OpenLDAP)"
 echo "########################################"
@@ -18,8 +21,8 @@ debconf-set-selections <<EOF
 slapd slapd/no_configuration boolean false
 slapd slapd/domain string fragflo159.org
 slapd shared/organization string fragflo159
-slapd slapd/password1 password asir
-slapd slapd/password2 password asir
+slapd slapd/password1 password $LDAP_PASS
+slapd slapd/password2 password $LDAP_PASS
 slapd slapd/backend select MDB
 slapd slapd/purge_database boolean true
 slapd slapd/move_old_database boolean true
@@ -30,16 +33,16 @@ dpkg-reconfigure -f noninteractive slapd
 echo "Esperando a que LDAP esté disponible"
 sleep 5
 
-echo "Cargando estructura base LDAP"
-ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w asir -f /vagrant/idp/sldapdb/base.ldif || true
+echo "[*] Cargando estructura base..."
+ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/base.ldif" -c
 
-echo "Cargando grupos LDAP"
-ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w asir -f /vagrant/idp/sldapdb/grupos.ldif || true
+echo "[*] Cargando grupos..."
+ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/grupos.ldif" -c
 
-echo "Cargando usuarios LDAP"
-ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w asir -f /vagrant/idp/sldapdb/usuarios.ldif || true
+echo "[*] Cargando usuarios..."
+ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/usr.ldif" -c
 
-echo "Cargando grupo proxy_users"
-ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w asir -f /vagrant/idp/sldapdb/proxy_users.ldif || true
+echo "[*] Cargando grupo proxy_users..."
+ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/proxy_users.ldif" -c
 
 echo "------ FIN IDP ------"

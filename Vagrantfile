@@ -62,7 +62,13 @@ Vagrant.configure("2") do |config|
     adminpc.vm.box = "generic/alpine319"
     adminpc.vm.hostname = "adminpc-#{iniciales}"
     adminpc.vm.network "private_network", ip: "172.2.#{N}.10", netmask: "255.255.255.0", virtualbox__intnet: "red_lan"
-    adminpc.vm.provision "shell", path: "adminpc/provision.sh"
+    adminpc.vm.provision "shell",
+        path: "adminpc/provision.sh",
+        env: {
+            "EMP_USERNAME" => ENV["EMP_USERNAME"],
+            "EMP_PASS" => ENV["EMP_PASS"]
+        }
+
     # eliminar default gw en eth0 – red NAT creada por defecto
     adminpc.vm.provision "shell",
         run: "always",

@@ -3,34 +3,33 @@
 set -e
 export DEBIAN_FRONTEND=noninteractive
 
-echo "########################################"
-echo " Aprovisionando proxy"
-echo "########################################"
-
-echo "Actualizando repositorios"
+echo "Actualizando sistema"
 apt-get update -y
 
-echo "Instalando squid"
-apt-get install -y squid
+echo "Instalando squid y helpers ldap"
+apt-get install -y squid squid-common ldap-utils
 
 echo "Creando estructura de directorios"
 mkdir -p /etc/squid/conf.d
 
 echo "Limpiando configuracion anterior"
-rm -rf /etc/squid/conf.d/*
+rm -f /etc/squid/conf.d/lan.conf
+rm -f /etc/squid/conf.d/dmz.conf
 rm -f /etc/squid/dominios-denegados
 rm -f /etc/squid/block-exp
 
-echo "Copiando configuracion desde el proyecto"
+echo "Copiando configuracion principal"
+cp /vagrant/proxy/conf/squid.conf /etc/squid/squid.conf
 
-cp /vagrant/proxy/conf/squid.conf /etc/squid/
-cp /vagrant/proxy/conf/*.conf /etc/squid/conf.d/
+echo "Copiando configuraciones adicionales"
+cp /vagrant/proxy/conf/lan.conf /etc/squid/conf.d/
+cp /vagrant/proxy/conf/dmz.conf /etc/squid/conf.d/
+
+echo "Copiando listas"
 cp /vagrant/proxy/dominios-denegados /etc/squid/
 cp /vagrant/proxy/block-exp /etc/squid/
 
 echo "Reiniciando squid"
-systemctl enable squid
 systemctl restart squid
 
 echo "------ FIN PROXY ------"
-su

@@ -8,5 +8,17 @@ echo "########################################"
 echo "-----------------"
 echo "Actualizando repositorios"
 apk update
-apk add curl nmap tcpdump wget bash iputils
+apk add curl nmap tcpdump wget bash iputils nano 
+
+echo "[+] Configurando proxy para apk"
+cat <<EOF > /etc/profile.d/proxy.sh
+export http_proxy=http://$EMP_USERNAME:$EMP_PASS@172.1.99.2:3128
+export https_proxy=http://$EMP_USERNAME:$EMP_PASS@172.1.99.2:3128
+EOF
+
+# Aplicar cambios
+source /etc/profile
+
+
+
 echo "------ FIN ------"

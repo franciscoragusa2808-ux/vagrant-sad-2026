@@ -1,45 +1,56 @@
 #!/usr/bin/env bash
 
-# El script se detiene si hay errores
 set -e
 export DEBIAN_FRONTEND=noninteractive
+
+# Cargar variables (password y rutas)
+source /vagrant/secrets.txt
+
 echo "########################################"
-echo " Aprovisionando idp "
+echo " Aprovisionando IDP (OpenLDAP)"
 echo "########################################"
-echo "Actualizando repositorios"
+
+echo "Actualizando sistema"
 apt-get update -y
-apt-get install -y net-tools iputils-ping curl tcpdump nmap
-# --- PARTE 1: Nuestros datos – sustituye con tus datos
-DOMAIN="fragflo159.org"
-ORGANIZACION="Práctica ldap"
-DB_DIR="/vagrant/idp/sldapdb"
-# Cargamos datos en debconf para que no se nos pidan durante la configuración
-sudo debconf-set-selections <<EOF
-slapd slapd/no_configuration boolean false
-slapd slapd/domain string ${DOMAIN}
-slapd slapd/organization string ${ORGANIZACION}
-slapd slapd/purge_database boolean true
-EOF
-# Instalamos paquetes necesarios para openldap
+
+echo "Instalando OpenLDAP y utilidades"
 apt-get install -y slapd ldap-utils
-apt-get autoremove -y
-# Esto ignora cualquier fallo de debconf y pone la clave que viene de Vagrant
-echo "[*] Forzando contraseña de administrador..."
-# Generamos el hash porque openldap está dando mucha lata al cogerla directamente del entorno
-SECURE_HASH=$(slappasswd -s "$LDAP_PASS")
-cat <<EOF > /tmp/set_pass.ldif
-dn: olcDatabase={1}mdb,cn=config
-changetype: modify
-replace: olcRootPW
-olcRootPW: $SECURE_HASH
+
+echo "Configurando slapd (modo no interactivo)"
+debconf-set-selections <<EOF
+slapd slapd/no_configuration boolean false
+slapd slapd/domain string fragflo159.org
+slapd shared/organization string fragflo159
+slapd slapd/password1 password $LDAP_PASS
+slapd slapd/password2 password $LDAP_PASS
+slapd slapd/backend select MDB
+slapd slapd/purge_database boolean true
+slapd slapd/move_old_database boolean true
 EOF
-# Usamos -Y EXTERNAL para entrar como root del sistema, sin contraseña
-ldapmodify -Y EXTERNAL -H ldapi:/// -f /tmp/set_pass.ldif
-# Cargamos datos
-echo "[*] Cargando base..."
+
+dpkg-reconfigure -f noninteractive slapd
+
+echo "Esperando a que LDAP esté disponible"
+sleep 5
+
+echo "[*] Cargando estructura base..."
 ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/base.ldif" -c
+
 echo "[*] Cargando grupos..."
 ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/grupos.ldif" -c
+
 echo "[*] Cargando usuarios..."
 ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/usr.ldif" -c
-echo "------ FIN ------"
+
+echo "[*] Cargando grupo proxy_users..."
+ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/proxy_users.ldif" -c
+
+# Acceso web a través del proxy
+echo "[*] Configurando acceso web a través del proxy"
+cat <<EOF > /etc/apt/apt.conf.d/99proxy
+Acquire::http::Proxy "http://172.1.6.2:3128/";
+Acquire::https::Proxy "http://172.1.6.2:3128/";
+EOF
+
+
+echo "------ FIN IDP ------"

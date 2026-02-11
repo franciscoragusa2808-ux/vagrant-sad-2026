@@ -31,6 +31,29 @@ iptables -A OUTPUT -o lo -j ACCEPT
 # Ping saliente
 iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
 iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+#L2. Ping a cualquier host
+iptables -A OUTPUT -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -p icmp --icmp-type echo-reply -j ACCEPT
+
+#L3. Permitir que me hagan ping desde la LAN Y DMZ
+iptables -A INPUT -i eth2 -s 172.1.6.0/24 -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -i eth3 -s 172.2.6.0/24 -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A OUTPUT -o eth2 -s 172.1.6.1 -p icmp --icmp-type echo-reply -j ACCEPT
+iptables -A OUTPUT -o eth3 -s 172.2.6.1 -p icmp --icmp-type echo-reply -j ACCEPT
+
+#L4. Permitir consultas DNS
+iptables -A OUTPUT -o eth0 -p udp --dport 53 -m conntrack --ctstate NEW -j ACCEPT
+iptables -A INPUT -i eth0 -p udp --sport 53 -m conntrack --ctstate ESTABLISHED -j ACCEPT
+
+#L5. Permitir HTTP/HTTPS PARA actualizar y nevegar
+iptables -A OUTPUT -o eth0 -p tcp --dport 80 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --sport 80 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A OUTPUT -o eth0 -p tcp --dport 443 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A INPUT -i eth0 -p tcp --sport 443 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+
+#L.5 Permitir acceso ssh para admincpc
+iptables -A INPUT -i eth3 -s 172.2.6.10 -p tcp --dport 22 -m conntrack --ctstate NEW,ESTABLISHED -j ACCEPT
+iptables -A OUTPUT -o eth3 -s 172.2.6.10 -p tcp --sport 22 -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 
 ################################
 # R1. NAT

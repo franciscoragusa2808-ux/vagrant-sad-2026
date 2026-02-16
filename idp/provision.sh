@@ -47,6 +47,10 @@ ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/usr.ldif
 echo "[*] Cargando grupo proxy_users..."
 ldapadd -x -D "cn=admin,dc=fragflo159,dc=org" -w $LDAP_PASS -f "$DB_DIR/proxy_users.ldif" -c
 
+echo "[*] Cargando usuarios de vpn..."
+ldapadd -x -D "cn=admin,dc=ieselc,dc=org" -w $LDAP_PASS -f "$DB_DIR/vpn_users.ldif" -c
+
+
 echo "[*] Configurando acceso web a través del proxy"
 cat <<EOF > /etc/apt/apt.conf.d/99proxy
 Acquire::http::Proxy "http://172.1.6.2:3128/";
